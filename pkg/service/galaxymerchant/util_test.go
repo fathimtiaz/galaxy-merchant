@@ -83,11 +83,6 @@ func Test_isQueryLineType(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "no is",
-			args: args{line: "how much ia a ?"},
-			want: false,
-		},
-		{
 			name: "minimal",
 			args: args{line: "how much is a ?"},
 			want: true,

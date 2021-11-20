@@ -1,5 +1,7 @@
 ## Install Go
-    sudo tar -xvf go1.16.3.linux-amd64.tar.gz
+    download go1.16.5
+
+    sudo tar -xvf go1.16.5.linux-amd64.tar.gz
     sudo mv go /usr/local
 
     sudo nano ~/.bashrc
@@ -27,7 +29,12 @@
 
 ## Run App
     go mod init
+    go mod tidy
 
     go build main.go
 
+    screen -S galaxy-merchant
     ./main
+
+    //detach from screen
+    CTRL a+d

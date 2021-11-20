@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,5 +19,6 @@ func main() {
 	router.HandleFunc("/post", handler.Result).Methods(http.MethodPost)
 	http.Handle("/", router)
 
+	fmt.Println("Running server on: ", config.CONF.Host)
 	log.Fatal(http.ListenAndServe(config.CONF.Host, nil))
 }

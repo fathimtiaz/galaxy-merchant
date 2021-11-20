@@ -7,21 +7,21 @@ import (
 )
 
 type GalaxyMerchant struct {
-	Numbers                 map[string]int
-	Translation             map[string]string
-	TranslationReversed     map[string]string
+	numbers                 map[string]int
+	translation             map[string]string
+	translationReversed     map[string]string
 	allowedRepition         map[string]int
 	allowedSmallerPrecedent map[string]string
 	prices                  map[string]int
-	Queries                 []string
+	queries                 []string
 	Results                 []string
 }
 
 func NewGalaxyMerchant() *GalaxyMerchant {
 	return &GalaxyMerchant{
-		Numbers:                 make(map[string]int),
-		Translation:             make(map[string]string),
-		TranslationReversed:     make(map[string]string),
+		numbers:                 make(map[string]int),
+		translation:             make(map[string]string),
+		translationReversed:     make(map[string]string),
 		allowedRepition:         make(map[string]int),
 		allowedSmallerPrecedent: make(map[string]string),
 		prices:                  make(map[string]int),
@@ -32,7 +32,7 @@ func NewGalaxyMerchant() *GalaxyMerchant {
 func (gm *GalaxyMerchant) ParseInput(input string) (err error) {
 	for i, line := range strings.Split(input, "\n") {
 		if line == "" { continue }
-		
+
 		if isDictionaryLineType(line) {
 			gm.translate(line)
 			continue
@@ -46,7 +46,7 @@ func (gm *GalaxyMerchant) ParseInput(input string) (err error) {
 		}
 
 		if isQueryLineType(line) {
-			gm.Queries = append(gm.Queries, line)
+			gm.queries = append(gm.queries, line)
 			continue
 		}
 
@@ -65,11 +65,11 @@ func (gm *GalaxyMerchant) translate(line string) {
 
 	number := originalNumbers[dictWord]
 
-	gm.Translation[newWord] = dictWord
-	gm.TranslationReversed[dictWord] = newWord
-	gm.Numbers[newWord] = number
+	gm.translation[newWord] = dictWord
+	gm.translationReversed[dictWord] = newWord
+	gm.numbers[newWord] = number
 	gm.allowedRepition[newWord] = originalAllowedRepition[dictWord]
-	gm.allowedSmallerPrecedent[newWord] = gm.TranslationReversed[originalAllowedSmallerPrecedent[dictWord]]
+	gm.allowedSmallerPrecedent[newWord] = gm.translationReversed[originalAllowedSmallerPrecedent[dictWord]]
 }
 
 // setPrices must be called after isPriceLineType
@@ -86,7 +86,7 @@ func (gm *GalaxyMerchant) setPrices(line string) (err error) {
 		if comp == "" {
 			continue
 		}
-		if _, ok := gm.Numbers[comp]; !ok {
+		if _, ok := gm.numbers[comp]; !ok {
 			mineral = comp
 			break
 		} else {
@@ -111,7 +111,7 @@ func (gm *GalaxyMerchant) calculateAmmount(words []string) (result int, err erro
 	var repetitionCount = 0
 
 	for i, word := range words {
-		result += gm.Numbers[word]
+		result += gm.numbers[word]
 
 		if i == 0 {
 			repetitionCount = 1
@@ -128,11 +128,11 @@ func (gm *GalaxyMerchant) calculateAmmount(words []string) (result int, err erro
 			return 0, fmt.Errorf("Invalid number of repitition for word %s", word)
 		}
 
-		if gm.Numbers[words[i-1]] < gm.Numbers[word] {
+		if gm.numbers[words[i-1]] < gm.numbers[word] {
 			if words[i-1] != gm.allowedSmallerPrecedent[word] {
 				return 0, fmt.Errorf("Invalid precedent %s for word %s", words[i-1], word)
 			} else {
-				result -= gm.Numbers[words[i-1]] * 2
+				result -= gm.numbers[words[i-1]] * 2
 			}
 		}
 	}
@@ -141,7 +141,7 @@ func (gm *GalaxyMerchant) calculateAmmount(words []string) (result int, err erro
 }
 
 func (gm *GalaxyMerchant) SetResults() (err error) {
-	for _, query := range gm.Queries {
+	for _, query := range gm.queries {
 		var result string
 		var queryComps = strings.Split(query, " is ")
 
@@ -181,7 +181,7 @@ func (gm *GalaxyMerchant) getAmountResult(query string, afterIsComps []string) (
 			continue
 		}
 
-		if _, ok := gm.Numbers[comp]; !ok {
+		if _, ok := gm.numbers[comp]; !ok {
 			return confusedResult, nil
 		}
 
@@ -192,7 +192,7 @@ func (gm *GalaxyMerchant) getAmountResult(query string, afterIsComps []string) (
 		return "", err
 	}
 
-	return fmt.Sprintf("%s %d", strings.Trim(query, " ?"), amount), nil
+	return fmt.Sprintf("%s is %d", strings.Trim(query, " ?"), amount), nil
 }
 
 func (gm *GalaxyMerchant) getPriceResult(query string, afterIsComps []string) (result string, err error) {
@@ -206,7 +206,7 @@ func (gm *GalaxyMerchant) getPriceResult(query string, afterIsComps []string) (r
 			continue
 		}
 
-		if _, ok = gm.Numbers[comp]; ok {
+		if _, ok = gm.numbers[comp]; ok {
 			words = append(words, comp)
 		} else if unitPrice, ok = gm.prices[comp]; !ok {
 			return confusedResult, nil
