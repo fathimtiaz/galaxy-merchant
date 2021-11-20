@@ -1,3 +1,6 @@
+## Demo is live at
+    http://103.56.148.67:8000/
+
 ## Install Go
     download go1.16.5
 
