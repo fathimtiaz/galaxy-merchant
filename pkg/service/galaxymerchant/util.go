@@ -53,3 +53,7 @@ func isQueryLineType(line string) bool {
 
 	return true
 }
+
+func normalizeInputLine(line string) (result string) {
+	return strings.TrimSpace(line)
+}

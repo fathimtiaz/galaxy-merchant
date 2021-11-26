@@ -2,6 +2,8 @@ package galaxymerchant
 
 import (
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestGalaxyMerchant_calculateAmmount(t *testing.T) {
@@ -10,7 +12,7 @@ func TestGalaxyMerchant_calculateAmmount(t *testing.T) {
 		translation             map[string]string
 		allowedRepition         map[string]int
 		allowedSmallerPrecedent map[string]string
-		prices                  map[string]int
+		prices                  map[string]decimal.Decimal
 		queries                 []string
 		Results                 []string
 	}
@@ -98,7 +100,7 @@ func TestGalaxyMerchant_setPrices(t *testing.T) {
 		translationReversed     map[string]string
 		allowedRepition         map[string]int
 		allowedSmallerPrecedent map[string]string
-		prices                  map[string]int
+		prices                  map[string]decimal.Decimal
 		queries                 []string
 		Results                 []string
 	}
@@ -136,32 +138,32 @@ func TestGalaxyMerchant_setPrices(t *testing.T) {
 			"pish": "glob",
 			"tegj": "pish",
 		},
-		prices: map[string]int{},
+		prices: map[string]decimal.Decimal{},
 	}
 
 	tests := []struct {
 		name       string
 		fields     fields
 		args       args
-		wantPrices map[string]int
+		wantPrices map[string]decimal.Decimal
 		wantErr    bool
 	}{
 		{
 			fields:     f,
 			args:       args{line: "glob glob silver is 2000 Credits"},
-			wantPrices: map[string]int{"silver": 1000},
+			wantPrices: map[string]decimal.Decimal{"silver": decimal.NewFromInt(1000)},
 			wantErr:    false,
 		},
 		{
 			fields:     f,
 			args:       args{line: "pish pish Iron is 3910 Credits"},
-			wantPrices: map[string]int{"Iron": 195},
+			wantPrices: map[string]decimal.Decimal{"Iron": decimal.NewFromFloat(195.5)},
 			wantErr:    false,
 		},
 		{
 			fields:     f,
 			args:       args{line: "glob prok Gold is 57800 Credits"},
-			wantPrices: map[string]int{"Gold": 14450},
+			wantPrices: map[string]decimal.Decimal{"Gold": decimal.NewFromInt(14450)},
 			wantErr:    false,
 		},
 	}
@@ -180,8 +182,8 @@ func TestGalaxyMerchant_setPrices(t *testing.T) {
 				t.Errorf("GalaxyMerchant.setPrices() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			for mineral, price := range tt.wantPrices {
-				if price != tt.fields.prices[mineral] {
-					t.Errorf("GalaxyMerchant.setPrices() field[%s].Price = %d, wantPrice[%s] %d", mineral, tt.fields.prices[mineral], mineral, price)
+				if !price.Equal(tt.fields.prices[mineral]) {
+					t.Errorf("GalaxyMerchant.setPrices() field[%s].Price = %+v, wantPrice[%s] %+v", mineral, tt.fields.prices[mineral], mineral, price)
 				}
 			}
 		})
@@ -195,7 +197,7 @@ func TestGalaxyMerchant_getAmountResult(t *testing.T) {
 		translationReversed     map[string]string
 		allowedRepition         map[string]int
 		allowedSmallerPrecedent map[string]string
-		prices                  map[string]int
+		prices                  map[string]decimal.Decimal
 		queries                 []string
 		Results                 []string
 	}
@@ -230,7 +232,7 @@ func TestGalaxyMerchant_getAmountResult(t *testing.T) {
 			"pish": "glob",
 			"tegj": "pish",
 		},
-		prices: map[string]int{},
+		prices: map[string]decimal.Decimal{},
 	}
 
 	type args struct {
@@ -281,7 +283,7 @@ func TestGalaxyMerchant_getPriceResult(t *testing.T) {
 		translationReversed     map[string]string
 		allowedRepition         map[string]int
 		allowedSmallerPrecedent map[string]string
-		prices                  map[string]int
+		prices                  map[string]decimal.Decimal
 		queries                 []string
 		Results                 []string
 	}
@@ -320,7 +322,7 @@ func TestGalaxyMerchant_getPriceResult(t *testing.T) {
 			"pish": "glob",
 			"tegj": "pish",
 		},
-		prices: map[string]int{"Silver": 8},
+		prices: map[string]decimal.Decimal{"Silver": decimal.NewFromInt(8)},
 	}
 
 	tests := []struct {
@@ -331,8 +333,8 @@ func TestGalaxyMerchant_getPriceResult(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			fields: f,
-			args: args{query: "glob prok Silver ?", afterIsComps: []string{"glob", "prok", "Silver", "?"}},
+			fields:     f,
+			args:       args{query: "glob prok Silver ?", afterIsComps: []string{"glob", "prok", "Silver", "?"}},
 			wantResult: "glob prok Silver is 32 Credits",
 		},
 	}

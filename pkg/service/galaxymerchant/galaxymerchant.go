@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type GalaxyMerchant struct {
@@ -12,7 +14,7 @@ type GalaxyMerchant struct {
 	translationReversed     map[string]string
 	allowedRepition         map[string]int
 	allowedSmallerPrecedent map[string]string
-	prices                  map[string]int
+	prices                  map[string]decimal.Decimal
 	queries                 []string
 	Results                 []string
 }
@@ -24,14 +26,18 @@ func NewGalaxyMerchant() *GalaxyMerchant {
 		translationReversed:     make(map[string]string),
 		allowedRepition:         make(map[string]int),
 		allowedSmallerPrecedent: make(map[string]string),
-		prices:                  make(map[string]int),
+		prices:                  make(map[string]decimal.Decimal),
 		Results:                 make([]string, 0),
 	}
 }
 
 func (gm *GalaxyMerchant) ParseInput(input string) (err error) {
 	for i, line := range strings.Split(input, "\n") {
-		if line == "" { continue }
+		line = normalizeInputLine(line)
+
+		if line == "" {
+			continue
+		}
 
 		if isDictionaryLineType(line) {
 			gm.translate(line)
@@ -50,7 +56,7 @@ func (gm *GalaxyMerchant) ParseInput(input string) (err error) {
 			continue
 		}
 
-		return fmt.Errorf("Invalid input on line %d", i+1)
+		return fmt.Errorf("invalid input on line %d", i+1)
 	}
 
 	return nil
@@ -76,7 +82,7 @@ func (gm *GalaxyMerchant) translate(line string) {
 func (gm *GalaxyMerchant) setPrices(line string) (err error) {
 	var words = []string{}
 	var mineral = ""
-	var totalPrice, amount = 0, 0
+	var totalPrice, amount = decimal.Decimal{}, 0
 
 	var lineComps = strings.Split(line, " is ")
 	var beforeIsComps = strings.Split(lineComps[0], " ")
@@ -98,11 +104,14 @@ func (gm *GalaxyMerchant) setPrices(line string) (err error) {
 		return err
 	}
 
-	if totalPrice, err = strconv.Atoi(afterIsComps[0]); err != nil {
+	totalPriceString, err := strconv.Atoi(afterIsComps[0])
+	if err != nil {
 		return err
 	}
 
-	gm.prices[mineral] = totalPrice / amount
+	totalPrice = decimal.NewFromInt(int64(totalPriceString))
+
+	gm.prices[mineral] = totalPrice.Div(decimal.NewFromInt(int64(amount)))
 
 	return nil
 }
@@ -125,12 +134,12 @@ func (gm *GalaxyMerchant) calculateAmmount(words []string) (result int, err erro
 		}
 
 		if repetitionCount > gm.allowedRepition[word] {
-			return 0, fmt.Errorf("Invalid number of repitition for word %s", word)
+			return 0, fmt.Errorf("invalid number of repitition for word %s", word)
 		}
 
 		if gm.numbers[words[i-1]] < gm.numbers[word] {
 			if words[i-1] != gm.allowedSmallerPrecedent[word] {
-				return 0, fmt.Errorf("Invalid precedent %s for word %s", words[i-1], word)
+				return 0, fmt.Errorf("invalid precedent %s for word %s", words[i-1], word)
 			} else {
 				result -= gm.numbers[words[i-1]] * 2
 			}
@@ -197,7 +206,8 @@ func (gm *GalaxyMerchant) getAmountResult(query string, afterIsComps []string) (
 
 func (gm *GalaxyMerchant) getPriceResult(query string, afterIsComps []string) (result string, err error) {
 	var words = []string{}
-	var unitPrice, amount int
+	var unitPrice decimal.Decimal
+	var amount int
 
 	for _, comp := range afterIsComps {
 		var ok bool
@@ -217,5 +227,5 @@ func (gm *GalaxyMerchant) getPriceResult(query string, afterIsComps []string) (r
 		return "", err
 	}
 
-	return fmt.Sprintf("%s is %d Credits", strings.Trim(query, " ?"), amount*unitPrice), nil
+	return fmt.Sprintf("%s is %+v Credits", strings.Trim(query, " ?"), unitPrice.Mul(decimal.NewFromInt(int64(amount)))), nil
 }
