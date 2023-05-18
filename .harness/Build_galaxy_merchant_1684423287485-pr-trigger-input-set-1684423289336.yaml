@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_galaxy_merchant_1684423287485-pr-trigger-input-set
+  identifier: Build_galaxy_merchant_1684423287485prtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_galaxy_merchant_1684423287485
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
